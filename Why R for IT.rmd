@@ -1,0 +1,300 @@
+---
+title: "R Overview for IT"
+author: "Operations"
+date: '`r format(Sys.Date())`'
+output:
+  ioslides_presentation: default
+  beamer_presentation: default
+  slidy_presentation: default
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## R Overview
+
+What is R?
+
+R is a programming environment built for statistical (data science) applications.
+Based on "S" and "Lisp"
+
+- ["R"](https://www.r-project.org)
+- ["S"](https://en.wikipedia.org/wiki/S_(programming_language))
+- [Lisp](https://en.wikipedia.org/wiki/Lisp_(programming_language))
+
+More
+- [History of R](http://blog.revolutionanalytics.com/2017/10/updated-history-of-r.html)
+
+## Getting R
+
+- ["R"](https://www.r-project.org)
+- [CRAN Mirrors](https://cran.r-project.org/mirrors.html)
+- [CRAN Packages](https://cloud.r-project.org/web/packages/index.html)
+
+## R - under the hood
+
+- Base
+- Stats
+- Methods (for S3 and S4 objects)
+- Graphics
+- Linear Algebra 
+    + LINPACK, LAPACK, others may be used
+
+## R - Packages
+
+- [CRAN Packages](https://cloud.r-project.org/web/packages/index.html)
+- [CRAN Package Task Views](https://cloud.r-project.org/web/views/)
+  
+- Over 12,000 packages
+    + Written by experts across many fields
+    + Statistics, Operations Research, Data Science, Machine Learning, Data Mining
+
+
+```{r load packages, echo = FALSE, include = FALSE}
+library(rvest)
+library(magrittr)
+library(ggplot2)
+library(plotly)
+library(dplyr)
+library(zoo)
+```
+
+## Setting up a plot
+[Link to Code](https://rpubs.com/filipstachura/rpackages)
+```{r CRAN growth data prep, echo = TRUE}
+url <- "https://cran.r-project.org/web/packages/available_packages_by_date.html"
+
+page <- read_html(url) %>%
+  html_node("table") %>%
+  html_table() %>%
+  mutate(count = rev(1:nrow(.))) %>%
+  mutate(Date = as.Date(Date)) %>%
+  mutate(Month = format(Date, format="%Y-%m")) %>%
+  group_by(Month) %>%
+  summarise(published = min(count)) %>%
+  mutate(Date = as.Date(as.yearmon(Month))) -> pkgs
+```
+
+## Example: Prepare plotly graph
+```{r plotly plot, echo = TRUE}
+margins = list(l = 100, r = 100, b = 100, t = 100, pad = 4)
+
+plot_pltly <- pkgs %>%
+  plot_ly(x = ~Date, y = ~published, name= "Published packages", 
+          type="scatter", mode = "lines") %>%
+  layout(title = "CRAN packages published over time.", 
+         margin = margins) 
+```
+
+## Growth of CRAN Packages (plotly)
+```{r CRAN growth plot plotly, echo = TRUE}
+plot_pltly
+```
+
+## Example: Prepare ggplot graph
+```{r ggplot plot, echo = TRUE}
+plot_gg <- pkgs %>%
+  ggplot(aes(x = Date, y = published)) +
+  geom_point(color = 'dark cyan') +
+  geom_line(color = 'red') +
+  scale_x_date(date_breaks = "years", date_labels = "%Y") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle('CRAN packages published over time')
+```
+
+## Growth of CRAN Packages (ggplot)
+```{r CRAN growth plot ggplot, echo = TRUE}
+plot_gg
+```
+
+## More R Characteristics
+
+- Object Oriented
+- Lists, dataframes, matrices, vectors, strings (no scalars)
+- Functions, modules, packages
+- Functional programming
+- Hooks into other languages 
+    + for instance: C, C++, Fortran, Java, Perl, etc. 
+
+## Basically ...
+
+- Everything that exists in R is an object.
+- Everthing that happens in R is a function call.
+- Interfaces to other software are part of R.
+
+    + [John Chambers](https://statweb.stanford.edu/~jmc4/vitae.html)
+
+## MoRe
+
+- Interpreted language 
+    + can speed up with: 
+        + more preprocessing in database
+        + vectorized R operations 
+        + compiled R  
+        + C/C++ 
+        
+    + [Tips for faster R](https://robinsones.github.io/Making-R-Code-Faster-A-Case-Study/)
+
+- Recent improvements in packages with common syntax ("Tidyverse")
+
+## Working with R
+
+- Development
+    + R itself (R scripts)
+    + IDE (R Studio, Eclipse, Visual Studio, others)
+    + code version management with svn and git (github)
+
+- Deployment
+    + Use within IDE (local machine, server)
+    + Batch script execution
+    + Called from other platforms
+    + Interactive application
+
+- [Data Science Workflow and R](https://speakerdeck.com/jennybc/workflow-you-should-have-one)
+
+## Getting data
+
+- Excel, csv, tab delimited
+- Web scraping
+- SharePoint (XML, JSON)
+- Various APIs (Google, Yahoo Finance, FRED, NOAA, etc etc)
+
+- SQL options
+    + MS Access (if we must)
+    + SQL Server (connects externally; is also built into)
+    + Oracle (connects externally; is also built into)
+    + MySQL
+    + Others: PostGres, NoSQL, MariaDB
+    + etc. (pretty much any DB system where we can define a connection string)
+
+## Support
+
+- [r-project.org](https://www.r-project.org/help.html)
+- [Stackoverflow](https://stackoverflow.com/questions/tagged/r)
+- [R Community](http://fg2re.sellorm.com/community.html)
+- [R Studio community](https://community.rstudio.com/)
+- [R-bloggers Learning R](https://www.r-bloggers.com/how-to-learn-r-2/)
+- Many social media groups (Twitter, Google+, others)
+- Many, many sites devoted to using R (UCLA IDRE; cookbook-R, etc etc etc)
+
+## Enterprise
+
+- R Studio Enterprise
+- Revolution R Enterprise (Microsoft)
+- Similar - S Plus (Tibco Software)
+- R within Microsoft SQL Server
+- R within Oracle
+
+## Making results available
+
+- Report writing
+    + can write to MS Word, PowerPoint 
+    + can create pdf docs, ioslides, slidify, etc
+    + can create text and rtf docs
+    + markdown
+    + notebooks (similar to Jupyter)
+
+- Reading and writing from/to Excel, Googlesheets
+
+- Can send e-mails, publish social media (Twitter)
+
+- Web publishing and web apps
+
+## Does R do graphs?
+
+[R Graph Gallery](https://www.r-graph-gallery.com/all-graphs/)  
+
+- Popular  
+    + base R plotting (very powerful)
+    + ggplot2 
+        + based on Cleveland's 'Grammer of Graphics'
+        + [some examples](http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html)
+        + [extensions to ggplot2](http://www.ggplot2-exts.org/gallery/)
+    + [plotly](https://plot.ly/)
+    + integration with javascript libraries (d3.js, raphael)
+
+- Many, many others
+
+
+## Data Mining and Machine Learning
+
+- Methods (a few)
+    + ANOVA, Linear Regression, Logistic Regression
+    + Principle Components Analysis, Factor Analysis, Discriminant Analysis
+    + Cluster Analysis, Neural Networks, Bayesian methods
+    + Text Mining and Sentiment Analysis
+    + Support Vector Machines, Random Forests, Gradient Boosting, Ensemble Methods
+    + Time Series and Forecasting
+
+- Machine Learning Integration
+    + Keras, Tensorflow, MS Azure, Spark, Hadoop, options for parallel processing
+
+## Web publishing options
+
+- [OpenCPU](https://www.opencpu.org/)
+    + HTML/CSS/Java/JavaScript
+
+- [Shiny with Shiny Server](https://shiny.rstudio.com/) 
+    + Translates (sort of) R code to HTML, CSS, Java, Javascript
+    + Very popular, growing in use and capabilities
+    + Provides static and dynamic/interactive reporting and app development
+    + Shiny development is fast, flexible
+    + Can run on any OS; currently using Linux  server at Essendant
+
+## Web publishing examples
+
+- [Shiny Gallery Examples](http://shiny.rstudio.com/gallery/)
+    + [flexible web layout options](https://shiny.rstudio.com/articles/layout-guide.html)  
+        + sidebar, fluid grid system, tabsets, nav lists, navbar pages 
+    + [themes and bootstrap](http://rstudio.github.io/shinythemes/)
+    + [Shiny Dashboard structure](https://rstudio.github.io/shinydashboard/)
+
+## Is R popular?
+
+- [IEEE Rankings 2017](https://spectrum.ieee.org/computing/software/the-2017-top-programming-languages)
+[(Interactive)](https://spectrum.ieee.org/static/interactive-the-top-programming-languages-2017)
+
+- [TIOBE Rankings 2017](https://www.tiobe.com/tiobe-index/)
+    
+- [Article on Data Science Software](http://r4stats.com/articles/popularity/)
+
+
+## More Reading
+
+- [Six Reasons to Use R for Business](https://www.r-bloggers.com/six-reasons-to-learn-r-for-business/)  
+
+- [Field Guide to the R Ecosystem](http://fg2re.sellorm.com/)
+
+## QUESTIONS ?
+
+```{r 3d plot prep, echo = FALSE, include = FALSE}
+library(rgl)
+library(rglwidget)
+library(knitr)
+knit_hooks$set(webgl = hook_webgl)
+```
+
+
+## Rotatable 3D Plot
+```{r 3d plot, r, webgl=TRUE}
+next3d()
+plot3d(mtcars$wt, mtcars$disp, mtcars$mpg, type="s", size=1, lit=TRUE, main = "Car Weight Vs Engine Displacement Vs Mileage",sub="3-D Plot")
+```
+
+## This presentation:
+
+- Created with
+    + R
+    + rmarkdown (markdown package with inline R functionality)
+        + ioslides format
+        + uses knit ('knitr' package)
+        + can also render to pdf (Beamer), MS Word, MS PowerPoint, slidy 
+        + etc etc
+
+
+- Published with
+    + shiny
+    + shiny-server
+    
